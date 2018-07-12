@@ -264,6 +264,10 @@ void Filter::onDestroy() {
     cancel_check_();
     cancel_check_ = nullptr;
   }
+
+  const HeaderMapImpl& headers{};
+  CheckData check_data(static_cast<const Http::HeaderMap&>(headers), decoder_callbacks_->connection());
+  handler_->ExtractRequestAttributes(&check_data);
 }
 
 void Filter::log(const HeaderMap* request_headers,
