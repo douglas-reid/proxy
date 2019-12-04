@@ -39,7 +39,8 @@ StackdriverOptions getStackdriverOptions(
 
   if (!test_monitoring_endpoint.empty()) {
     auto channel = grpc::CreateChannel(test_monitoring_endpoint,
-                                       grpc::InsecureChannelCredentials());
+                                       grpc::GoogleDefaultCredentials());
+                                       //grpc::InsecureChannelCredentials());
     options.metric_service_stub =
         google::monitoring::v3::MetricService::NewStub(channel);
   }
