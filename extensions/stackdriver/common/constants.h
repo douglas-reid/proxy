@@ -92,6 +92,14 @@ constexpr char kMonitoringService[] = "monitoring.googleapis.com";
 constexpr char kLoggingService[] = "logging.googleapis.com";
 constexpr char kMeshTelemetryService[] = "meshtelemetry.googleapis.com";
 
+// Prefix for Kubernetes UIDs
+constexpr char kKubeUIDPrefix[] = "kubernetes://";
+
+// Prefixes used for GCE Instance UIDs
+constexpr char kGCEInstanceUIDPrefix[] = "//compute.googleapis.com/projects/";
+constexpr char kGCEInstanceUIDZones[] = "/zones/";
+constexpr char kGCEInstanceUIDInstances[] = "/instances/";
+
 }  // namespace Common
 }  // namespace Stackdriver
 }  // namespace Extensions

@@ -152,6 +152,24 @@ bool StackdriverRootContext::onConfigure(size_t) {
     return false;
   }
 
+  // Stackdriver expects all nodes to have an OWNER. Here we will do our best to populate
+  // appropriate values for use by all stackdriver extensions.
+  if (local_node_info->owner().empty()) {
+    const auto& platform_metadata = local_node_info.platform_metadata();
+    const auto instance_iter = platform_metadata.find(Common::kGCPGCEInstanceIDKey);
+    const auto project_iter = platform_metadata.find(Common::kGCPProjectKey);
+    const auto location_iter = platform_metadata.find(Common::kGCPLocationKey);
+
+    // if this is a GCE Instance (with proper identifying info), construct a GCE Owner UID
+    if (instance_iter != platform_metadata.end() && project_iter != platform_metadata.end() && location_iter != platform_metadata.end()) {
+    // TODO(douglas-reid): support MIGs.
+    absl::StrAppend(local_node_info->mutable_owner(), kGCEInstanceUIDPrefix, project_iter->second, kGCEZonesPrefix, location_iter->second, kGCEInstancesPrefix, instance_iter->second);
+  } else if ( !local_node_info.name().empty() && !local_node_info.namespace_().empty()) {
+    // otherwise fallback to OSS k8s UIDs (when possible)
+    absl::StrAppend(local_node_info->mutable_owner(), kKubeUIDPrefix, local_node_info.name(),".", local_node_info.namespace_());
+  }
+  }
+
   direction_ = ::Wasm::Common::getTrafficDirection();
   use_host_header_fallback_ = !config_.disable_host_header_fallback();
 

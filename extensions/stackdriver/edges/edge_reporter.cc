@@ -43,18 +43,25 @@ using google::cloud::meshtelemetry::v1alpha1::WorkloadInstance;
 namespace {
 void instanceFromMetadata(const ::wasm::common::NodeInfo& node_info,
                           WorkloadInstance* instance) {
-  // TODO(douglas-reid): support more than just kubernetes instances
-  if ((node_info.name().length() > 0) &&
-      (node_info.namespace_().length() > 0)) {
-    absl::StrAppend(instance->mutable_uid(), "kubernetes://", node_info.name(),
-                    ".", node_info.namespace_());
-  }
-  // TODO(douglas-reid): support more than just GCP ?
+
+  // TODO(douglas-reid): support more than just GCP platforms?
   const auto& platform_metadata = node_info.platform_metadata();
+  const auto instance_iter = platform_metadata.find(Common::kGCPGCEInstanceIDKey);
+  const auto project_iter = platform_metadata.find(Common::kGCPProjectKey);
   const auto location_iter = platform_metadata.find(Common::kGCPLocationKey);
+
+  if (instance_iter != platform_metadata.end() && project_iter != platform_metadata.end() && location_iter != platform_metadata.end()) {
+    absl::StrAppend(instance->mutable_uid(), kGCEInstanceUIDPrefix, project_iter->second, kGCEZonesPrefix, location_iter->second, kGCEInstancesPrefix, instance_iter->second);
+    // TODO(douglas-reid): support MIGs.
+    absl::StrAppend(instance->mutable_owner_uid(), instance->uid());
+  } else if ( !node_info.name().empty() && !node_info.namespace_().empty()) {
+    absl::StrAppend(instance->mutable_uid(), kKubeUIDPrefix, node_info.name(),".", node_info.namespace_());
+  }
+
   if (location_iter != platform_metadata.end()) {
     instance->set_location(location_iter->second);
   }
+
   const auto cluster_iter = platform_metadata.find(Common::kGCPClusterNameKey);
   if (cluster_iter != platform_metadata.end()) {
     instance->set_cluster_name(cluster_iter->second);
