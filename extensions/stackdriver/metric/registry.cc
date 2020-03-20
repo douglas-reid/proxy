@@ -117,7 +117,14 @@ StackdriverOptions getStackdriverOptions(
     options.metric_service_stub =
         google::monitoring::v3::MetricService::NewStub(channel);
   } else if (!test_monitoring_endpoint.empty()) {
-    auto channel = grpc::CreateChannel(test_monitoring_endpoint, channel_creds);
+
+    ::grpc::ChannelArguments args;
+    args.SetUserAgentPrefix("opencensus-cpp/0.5.0-dev");
+
+    auto channel = ::grpc::CreateCustomChannel(test_monitoring_endpoint,
+                                    ::grpc::GoogleDefaultCredentials(),
+                                    args);
+    // auto channel = grpc::CreateChannel(test_monitoring_endpoint, channel_creds);
     options.metric_service_stub =
         google::monitoring::v3::MetricService::NewStub(channel);
   }
